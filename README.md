@@ -185,8 +185,8 @@ The Buffer Pool Manager (BPM) sits between memory requests and the Disk Manager,
 1. **`pages_` (std::vector<Page*>)**: An array of fixed size `pool_size_` containing raw 4KB memory blocks. These represent physical caching slots called **Frames**.
 2. **`page_table_` (std::unordered_map<PageID, size_t>)**: Translates logical `PageID` to physical frame index.
 3. **`replacer_` (std::list<size_t>)**: The Least Recently Used (LRU) list tracking unpinned frame indexes. The front of this list is the primary victim selected for eviction.
-4. **`replacer_map_` (std::unordered_map<size_t, std::list<size_t>::iterator>)**: Connects frame indexes directly to list nodes, optimizing LRU update routines (insertion and removal) to $O(1)$ time complexity.
-5. **`pin_counts_` (std::vector<int>)**: Measures how many operations are currently referencing a frame. If a page has a pin count $> 0$, it is locked in memory and cannot be evicted.
+4. **`replacer_map_` (std::unordered_map<size_t, std::list<size_t>::iterator>)**: Connects frame indexes directly to list nodes, optimizing LRU update routines (insertion and removal) to `O(1)` time complexity.
+5. **`pin_counts_` (std::vector<int>)**: Measures how many operations are currently referencing a frame. If a page has a pin count `> 0`, it is locked in memory and cannot be evicted.
 6. **`is_dirty_` (std::vector<bool>)**: Tracks dirty writes. If a pinned page is modified, its frame is flagged dirty. When evicted, it is automatically flushed back to disk by the BPM.
 7. **`latch_` (std::mutex)**: Coordinates thread access to the internal maps, vectors, and replacers.
 
@@ -231,10 +231,10 @@ A split occurs when inserting a key into a node that has reached its maximum siz
 
 #### Leaf Node Splitting
 1. A new leaf node is initialized through the Buffer Pool Manager.
-2. Half of the entries ($mid = \frac{BTREE\_ORDER}{2}$) are moved to the new sibling page.
+2. Half of the entries (`mid = BTREE_ORDER / 2`) are moved to the new sibling page.
 3. Sibling pointers are linked:
-   $$\text{new\_leaf}\rightarrow\text{next\_page\_id} = \text{old\_leaf}\rightarrow\text{next\_page\_id}$$
-   $$\text{old\_leaf}\rightarrow\text{next\_page\_id} = \text{new\_leaf}\rightarrow\text{page\_id}$$
+   - `new_leaf->next_page_id = old_leaf->next_page_id`
+   - `old_leaf->next_page_id = new_leaf->page_id`
 4. The first key of the new leaf node is copied and promoted up to the parent internal node as a routing key.
 
 ```
@@ -253,7 +253,7 @@ After Split (Promoting K3):
 
 #### Internal Node Splitting
 1. A new internal node is initialized.
-2. The key at the midpoint ($mid$) is chosen for promotion.
+2. The key at the midpoint (`mid`) is chosen for promotion.
 3. All entries *after* the midpoint are moved to the new internal node.
 4. The midpoint key is promoted up to the parent internal node, while the key itself is removed from the child level (unlike leaf splits, where the promoted key is retained at the leaf level).
 
